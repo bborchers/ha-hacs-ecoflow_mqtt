@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EcoFlow MQTT",
+        "description": "Direkte Verbindung zum EcoFlow Cloud-MQTT-Dienst. Zugangsdaten werden von EcoFlow bereitgestellt.",
+        "data": {
+          "user_id": "EcoFlow User ID",
+          "mqtt_username": "MQTT username",
+          "mqtt_password": "MQTT password",
+          "client_id": "MQTT client ID",
+          "broker": "Broker",
+          "port": "Port",
+          "devices": "Geräte (SERIAL oder SERIAL=TYPE, kommagetrennt)"
+        }
+      }
+    },
+    "error": {"no_devices": "Mindestens eine Seriennummer angeben."}
+  }
+}
