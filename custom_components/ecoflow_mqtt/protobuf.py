@@ -269,25 +269,34 @@ def encode_stream_command(serial: str, key: str, value, current_values: dict | N
         "relay2Onoff": 380, "relay3Onoff": 381, "powConsumptionMeasurement": 239,
         "backupReverseSoc": 102, "cmsMinDsgSoc": 34, "cmsMaxChgSoc": 33,
     }
+    current_values = current_values or {}
     if key == "loadPower1":
-        current_values = current_values or {}
-        load = b"".join((
-            _field(1, 0, int(current_values.get("startMin1", 0))),
-            _field(2, 0, int(current_values.get("endMin1", 0))),
-            _field(3, 0, int(value)),
-        ))
-        pdata = b"".join((
-            _field(6, 0, int(time.time())),
-            _field(169, 0, int(current_values.get("feedGridModePowLimit", 0))),
-            _field(379, 2, load),
-        ))
+        load_fields = []
+        for field, state_key in ((1, "startMin1"), (2, "endMin1")):
+            if current_values.get(state_key) is not None:
+                load_fields.append(_field(field, 0, int(current_values[state_key])))
+        load_fields.append(_field(3, 0, int(value)))
+        pdata_fields = [_field(6, 0, int(time.time()))]
+        if current_values.get("feedGridModePowLimit") is not None:
+            pdata_fields.append(_field(169, 0, int(current_values["feedGridModePowLimit"])))
+        pdata_fields.append(_field(379, 2, b"".join(load_fields)))
+        pdata = b"".join(pdata_fields)
         data_len = len(pdata)
     elif key not in field_numbers:
         raise ValueError(f"unsupported Stream command: {key}")
     else:
         # The actual field number is device-specific and is large (up to 3 bytes
         # as a protobuf tag).
-        pdata = _field(6, 0, int(time.time())) + _field(field_numbers[key], 0, int(value))
+        pdata_fields = [_field(6, 0, int(time.time()))]
+        if key == "cmsMaxChgSoc" and current_values.get("cmsMinDsgSoc") is not None:
+            pdata_fields.append(_field(field_numbers[key], 0, int(value)))
+            pdata_fields.append(_field(34, 0, int(current_values["cmsMinDsgSoc"])))
+        elif key == "cmsMinDsgSoc" and current_values.get("cmsMaxChgSoc") is not None:
+            pdata_fields.append(_field(33, 0, int(current_values["cmsMaxChgSoc"])))
+            pdata_fields.append(_field(field_numbers[key], 0, int(value)))
+        else:
+            pdata_fields.append(_field(field_numbers[key], 0, int(value)))
+        pdata = b"".join(pdata_fields)
         data_len = 9 if key not in {"cmsMinDsgSoc", "cmsMaxChgSoc"} else 12
     header = b"".join((
         _field(2, 0, 32), _field(3, 0, 2), _field(4, 0, 1), _field(5, 0, 1),
