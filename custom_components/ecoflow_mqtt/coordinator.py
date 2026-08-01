@@ -4,8 +4,6 @@ import asyncio
 import json
 import logging
 import random
-import time
-from collections.abc import Callable
 
 import paho.mqtt.client as mqtt
 from homeassistant.config_entries import ConfigEntry
@@ -29,7 +27,6 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict]):
         self._client: mqtt.Client | None = None
         self._loop = asyncio.get_running_loop()
         self._connected = asyncio.Event()
-        self._listeners: list[Callable[[], None]] = []
 
     @property
     def devices(self) -> list[str]:
@@ -45,10 +42,6 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict]):
         if self._client:
             await self.hass.async_add_executor_job(self._client.disconnect)
             self._client = None
-
-    def add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
-        self._listeners.append(listener)
-        return lambda: self._listeners.remove(listener)
 
     def value(self, serial: str, key: str):
         return self.values.get(serial, {}).get(key)
@@ -89,7 +82,6 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict]):
         for serial in self.devices:
             self.online[serial] = False
         self.async_set_updated_data(self.values)
-        self._notify()
 
     def _on_message(self, client, userdata, message) -> None:
         serial = next((d for d in self.devices if f"/{d}/" in message.topic or message.topic.endswith(f"/{d}")), None)
@@ -142,15 +134,10 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict]):
         self.values[serial].update(values)
         self.online[serial] = True
         self.async_set_updated_data(self.values)
-        self._notify()
 
     def _set_online(self, serial: str, value: bool) -> None:
         self.online[serial] = value
-        self._notify()
-
-    def _notify(self) -> None:
-        for listener in tuple(self._listeners):
-            listener()
+        self.async_set_updated_data(self.values)
 
     def _publish_get(self, serial: str) -> None:
         if self._client:
