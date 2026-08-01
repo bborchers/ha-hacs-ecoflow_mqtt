@@ -156,11 +156,11 @@ STREAM_FIELDS = {
         361: ("powGetPv", 1), 380: ("plugInInfoPvVol", 1), 381: ("plugInInfoPvAmp", 1),
         442: ("plugInInfoPv2Vol", 1), 461: ("backupReverseSoc", 1), 515: ("powGetSysGrid", 1),
         516: ("powGetSysLoad", 1), 517: ("powGetPvSum", 1), 518: ("powGetBpCms", 1),
-        520: ("feedGridMode", 1), 602: ("moduleWifiRssi", 1), 613: ("gridConnectionVol", 1),
+        520: ("feedGridMode", 1), 521: ("feedGridModePowLimit", 1), 602: ("moduleWifiRssi", 1), 613: ("gridConnectionVol", 1),
         614: ("gridConnectionAmp", 1), 615: ("gridConnectionFreq", 1), 616: ("gridConnectionPower", 1),
         760: ("powConsumptionMeasurement", 1), 980: ("relay2Onoff", 1), 981: ("relay4Onoff", 1),
         982: ("relay3Onoff", 1), 983: ("relay1Onoff", 1), 992: ("sysGridConnectionPower", 1),
-        993: ("socketMeasurePower", 1), 996: ("powGetPv3", 1), 997: ("powGetPv4", 1),
+        993: ("socketMeasurePower", 1), 978: ("_dayResidentLoadList", 1), 996: ("powGetPv3", 1), 997: ("powGetPv4", 1),
     },
     "RuntimePropertyUpload": {},
 }
@@ -195,7 +195,20 @@ def decode_stream(data: bytes) -> dict[str, object]:
                 if field in (1, 2) and wire_type == 2:
                     values.update(_decode_payload(raw, CMS_FIELDS))
         else:
-            values.update(_decode_payload(header["pdata"], STREAM_FIELDS[message]))
+            for field, wire_type, raw in _fields(header["pdata"]):
+                if field == 978 and wire_type == 2:
+                    for nested_field, nested_wire_type, nested_raw in _fields(raw):
+                        name = {1: "startMin1", 2: "endMin1", 3: "loadPower1"}.get(nested_field)
+                        if name and nested_wire_type == 0:
+                            values[name] = _signed(nested_raw)
+                    continue
+                mapping = STREAM_FIELDS[message].get(field)
+                if not mapping or wire_type not in (0, 5):
+                    continue
+                raw_value = struct.unpack("<f", raw)[0] if wire_type == 5 else _signed(raw)
+                name, multiplier = mapping
+                if not name.startswith("_"):
+                    values[name] = round(raw_value * multiplier, 3)
     return values
 
 
@@ -249,21 +262,36 @@ def encode_pstream_get(serial: str) -> bytes:
     return _field(1, 2, header)
 
 
-def encode_stream_command(serial: str, key: str, value) -> bytes:
+def encode_stream_command(serial: str, key: str, value, current_values: dict | None = None) -> bytes:
     """Encode the common Stream Ultra/AC Pro DisplayPropertyUpload writes."""
     field_numbers = {
         # ConfigWrite uses different field numbers than DisplayPropertyUpload.
         "relay2Onoff": 380, "relay3Onoff": 381, "powConsumptionMeasurement": 239,
         "backupReverseSoc": 102, "cmsMinDsgSoc": 34, "cmsMaxChgSoc": 33,
     }
-    if key not in field_numbers:
+    if key == "loadPower1":
+        current_values = current_values or {}
+        load = b"".join((
+            _field(1, 0, int(current_values.get("startMin1", 0))),
+            _field(2, 0, int(current_values.get("endMin1", 0))),
+            _field(3, 0, int(value)),
+        ))
+        pdata = b"".join((
+            _field(6, 0, int(time.time())),
+            _field(169, 0, int(current_values.get("feedGridModePowLimit", 0))),
+            _field(379, 2, load),
+        ))
+        data_len = len(pdata)
+    elif key not in field_numbers:
         raise ValueError(f"unsupported Stream command: {key}")
-    # The actual field number is device-specific and is large (up to 3 bytes
-    # as a protobuf tag).
-    pdata = _field(6, 0, int(time.time())) + _field(field_numbers[key], 0, int(value))
+    else:
+        # The actual field number is device-specific and is large (up to 3 bytes
+        # as a protobuf tag).
+        pdata = _field(6, 0, int(time.time())) + _field(field_numbers[key], 0, int(value))
+        data_len = 9 if key not in {"cmsMinDsgSoc", "cmsMaxChgSoc"} else 12
     header = b"".join((
         _field(2, 0, 32), _field(3, 0, 2), _field(4, 0, 1), _field(5, 0, 1),
-        _field(8, 0, 254), _field(9, 0, 17), _field(10, 0, 9 if key not in {"cmsMinDsgSoc", "cmsMaxChgSoc"} else 12),
+        _field(8, 0, 254), _field(9, 0, 17), _field(10, 0, data_len),
         _field(11, 0, 1), _field(14, 0, int(time.time() * 1000)), _field(15, 0, 56),
         _field(16, 0, 3), _field(17, 0, 1), _field(23, 2, b"Android"),
         _field(25, 2, serial.encode()), _field(1, 2, pdata),

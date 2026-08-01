@@ -163,7 +163,7 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict]):
             return
         if self.device_type(serial).startswith("stream_"):
             try:
-                payload = encode_stream_command(serial, key, value)
+                payload = encode_stream_command(serial, key, value, self.values.get(serial))
             except ValueError as err:
                 _LOGGER.warning("%s", err)
                 return

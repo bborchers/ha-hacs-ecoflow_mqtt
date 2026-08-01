@@ -101,6 +101,7 @@ STREAM_SENSORS = {
     "gridConnectionPower": ("Grid connection power", "W", "power", 1),
     "sysGridConnectionPower": ("System grid power", "W", "power", 1),
     "socketMeasurePower": ("Socket power", "W", "power", 1),
+    "feedGridModePowLimit": ("Feed-in power limit", "W", "power", 1),
     "bmsDsgRemTime": ("Battery discharge time", "min", "duration", 1),
     "bmsChgRemTime": ("Battery charge time", "min", "duration", 1),
     "cmsDsgRemTime": ("System discharge time", "min", "duration", 1),
@@ -121,4 +122,5 @@ STREAM_NUMBERS = {
     "cmsMinDsgSoc": ("Minimum discharge", "%", 0, 100, 1, "DisplayPropertyUpload"),
     "backupReverseSoc": ("Backup reserve", "%", 0, 100, 1, "DisplayPropertyUpload"),
     "powConsumptionMeasurement": ("Consumption measurement", "W", 0, 10000, 1, "DisplayPropertyUpload"),
+    "loadPower1": ("Base load power (partial automatic)", "W", 0, 800, 1, "ConfigWrite"),
 }
