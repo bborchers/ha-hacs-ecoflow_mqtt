@@ -252,8 +252,9 @@ def encode_pstream_get(serial: str) -> bytes:
 def encode_stream_command(serial: str, key: str, value) -> bytes:
     """Encode the common Stream Ultra/AC Pro DisplayPropertyUpload writes."""
     field_numbers = {
-        "relay2Onoff": 980, "relay3Onoff": 982, "powConsumptionMeasurement": 760,
-        "backupReverseSoc": 461, "cmsMinDsgSoc": 271, "cmsMaxChgSoc": 270,
+        # ConfigWrite uses different field numbers than DisplayPropertyUpload.
+        "relay2Onoff": 380, "relay3Onoff": 381, "powConsumptionMeasurement": 239,
+        "backupReverseSoc": 102, "cmsMinDsgSoc": 34, "cmsMaxChgSoc": 33,
     }
     if key not in field_numbers:
         raise ValueError(f"unsupported Stream command: {key}")

@@ -10,8 +10,17 @@ from .entity import EcoFlowEntity
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    all_switches = {**SWITCHES, **PROTO_SWITCHES, **STREAM_SWITCHES}
-    async_add_entities([EcoFlowSwitch(coordinator, serial, key) for serial in coordinator.devices for key in all_switches])
+    entities = []
+    for serial in coordinator.devices:
+        device_type = coordinator.device_type(serial)
+        if device_type.startswith("stream_"):
+            definitions = STREAM_SWITCHES
+        elif device_type.startswith("pstream"):
+            definitions = PROTO_SWITCHES
+        else:
+            definitions = SWITCHES
+        entities.extend(EcoFlowSwitch(coordinator, serial, key) for key in definitions)
+    async_add_entities(entities)
 
 
 class EcoFlowSwitch(EcoFlowEntity, SwitchEntity):

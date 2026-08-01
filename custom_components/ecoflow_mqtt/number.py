@@ -10,14 +10,24 @@ from .entity import EcoFlowEntity
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    all_numbers = {**NUMBERS, **PROTO_NUMBERS, **STREAM_NUMBERS}
-    async_add_entities([EcoFlowNumber(coordinator, serial, key) for serial in coordinator.devices for key in all_numbers])
+    entities = []
+    for serial in coordinator.devices:
+        device_type = coordinator.device_type(serial)
+        if device_type.startswith("stream_"):
+            definitions = STREAM_NUMBERS
+        elif device_type.startswith("pstream"):
+            definitions = PROTO_NUMBERS
+        else:
+            definitions = NUMBERS
+        entities.extend(EcoFlowNumber(coordinator, serial, key) for key in definitions)
+    async_add_entities(entities)
 
 
 class EcoFlowNumber(EcoFlowEntity, NumberEntity):
     def __init__(self, coordinator, serial, key):
         super().__init__(coordinator, serial, key)
-        name, unit, minimum, maximum, step, _ = {**NUMBERS, **PROTO_NUMBERS, **STREAM_NUMBERS}[key]
+        definitions = {**NUMBERS, **PROTO_NUMBERS, **STREAM_NUMBERS}
+        name, unit, minimum, maximum, step, _ = definitions[key]
         self._attr_name = name
         self._attr_native_unit_of_measurement = unit
         self._attr_native_min_value = minimum
