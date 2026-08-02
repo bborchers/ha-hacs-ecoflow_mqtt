@@ -101,7 +101,6 @@ Der Slider `Base load power (partial automatic)` hat aktuell:
 ## Bekannte Home-Assistant-/MQTT-Themen
 
 - Retained MQTT-Discovery-Nachrichten aus der alten ioBroker-Integration können weiterhin `homeassistant.components.mqtt`-Fehler erzeugen, etwa wegen `device_class: capacity`. Diese Fehler stammen nicht aus `custom_components/ecoflow_mqtt`.
-- Am 2026-08-02 wurden zehn eindeutig zu `origin.name: iobroker.ecoflow-mqtt` gehörende retained Discovery-Konfigurationen für `designCap`, `remainCap`, `fullCap`, `accuChgCap` und `accuDsgCap` der Geräte `BK11ZEBB2H3Q0135` und `BK31ZE1A4H4V0408` aus dem Mosquitto-Broker gelöscht. Danach waren keine passenden retained Nachrichten mehr vorhanden und es traten keine neuen `capacity`-Fehler auf. Bei einer Wiederkehr muss die ioBroker-Quelle angepasst oder erneut bereinigt werden.
 - Bei Änderungen an Plattformdefinitionen können alte Entities weiter als `unknown` sichtbar sein. Die neuen gerätespezifischen Entities prüfen und verwaiste alte Entities anschließend gezielt löschen.
 - Ein normaler `ha core restart` kann durch einen festhängenden Supervisor-Job blockiert sein. Vor einem Neustart `ha jobs info` prüfen. Falls erforderlich, Supervisor neu starten; ein direkter `docker restart homeassistant` ist nur als gezielte, autorisierte Diagnose-/Wartungsmaßnahme zu verwenden.
 - Vor manuellen Änderungen an `/config/.storage/core.entity_registry` eine Kopie anlegen und nur explizit identifizierte Integrations-Entities bearbeiten.
