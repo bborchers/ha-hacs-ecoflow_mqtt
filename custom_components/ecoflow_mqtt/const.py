@@ -91,6 +91,8 @@ STREAM_SENSORS = {
     "cmsBattSoh": ("Overall battery state of health", "%", "battery", 1),
     "powGetPv": ("PV power", "W", "power", 1),
     "powGetPv2": ("PV2 power", "W", "power", 1),
+    "powGetPv3": ("PV3 power", "W", "power", 1),
+    "powGetPv4": ("PV4 power", "W", "power", 1),
     "powGetPvSum": ("Total PV power", "W", "power", 1),
     "powGetSysGrid": ("Grid power", "W", "power", 1),
     "powGetSysLoad": ("Load power", "W", "power", 1),

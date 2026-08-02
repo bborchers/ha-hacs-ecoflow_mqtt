@@ -16,6 +16,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         device_type = coordinator.device_type(serial)
         if device_type.startswith("stream_"):
             definitions = STREAM_SENSORS
+            if device_type == "stream_ac_pro":
+                definitions = {
+                    key: definition for key, definition in definitions.items()
+                    if key not in {"powGetPv", "powGetPv2", "powGetPv3", "powGetPv4", "powGetPvSum"}
+                }
         elif device_type.startswith("pstream"):
             definitions = PROTO_SENSORS
         else:
