@@ -197,10 +197,13 @@ def decode_stream(data: bytes) -> dict[str, object]:
         else:
             for field, wire_type, raw in _fields(header["pdata"]):
                 if field == 978 and wire_type == 2:
-                    for nested_field, nested_wire_type, nested_raw in _fields(raw):
-                        name = {1: "startMin1", 2: "endMin1", 3: "loadPower1"}.get(nested_field)
-                        if name and nested_wire_type == 0:
-                            values[name] = _signed(nested_raw)
+                    for list_field, list_wire_type, list_raw in _fields(raw):
+                        if list_field != 1 or list_wire_type != 2:
+                            continue
+                        for nested_field, nested_wire_type, nested_raw in _fields(list_raw):
+                            name = {1: "startMin1", 2: "endMin1", 3: "loadPower1"}.get(nested_field)
+                            if name and nested_wire_type == 0:
+                                values[name] = _signed(nested_raw)
                     continue
                 mapping = STREAM_FIELDS[message].get(field)
                 if not mapping or wire_type not in (0, 5):
@@ -288,7 +291,7 @@ def encode_stream_command(serial: str, key: str, value, current_values: dict | N
         pdata_fields = [_field(6, 0, int(time.time()))]
         if current_values.get("feedGridModePowLimit") is not None:
             pdata_fields.append(_field(169, 0, int(current_values["feedGridModePowLimit"])))
-        pdata_fields.append(_field(379, 2, b"".join(load_fields)))
+        pdata_fields.append(_field(379, 2, _field(1, 2, b"".join(load_fields))))
         pdata = b"".join(pdata_fields)
         data_len = len(pdata)
     elif key not in field_numbers:
