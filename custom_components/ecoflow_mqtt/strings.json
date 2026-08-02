@@ -10,20 +10,33 @@
           "api_host": "EcoFlow API host"
         }
       },
-      "select_devices": {
-        "title": "Select EcoFlow devices",
-        "description": "The devices associated with the account were found automatically.",
-        "data": {"devices": "Devices"}
-      },
-      "manual_devices": {
-        "title": "Enter EcoFlow devices",
-        "description": "{reason} Enter serial numbers separated by commas. A decoder type can be added as SERIAL=TYPE.",
-        "data": {"devices": "Devices"}
+      "devices": {
+        "title": "EcoFlow devices",
+        "description": "Enter the serial number and select the decoder type for each device. Additional rows are optional.",
+        "data": {
+          "serial_1": "Serial number 1",
+          "type_1": "Device type 1",
+          "serial_2": "Serial number 2",
+          "type_2": "Device type 2",
+          "serial_3": "Serial number 3",
+          "type_3": "Device type 3",
+          "serial_4": "Serial number 4",
+          "type_4": "Device type 4",
+          "serial_5": "Serial number 5",
+          "type_5": "Device type 5",
+          "serial_6": "Serial number 6",
+          "type_6": "Device type 6",
+          "serial_7": "Serial number 7",
+          "type_7": "Device type 7",
+          "serial_8": "Serial number 8",
+          "type_8": "Device type 8"
+        }
       }
     },
     "error": {
       "invalid_auth": "EcoFlow login failed. Check the email, password and API host.",
-      "no_devices": "Select or enter at least one device."
+      "no_devices": "Enter at least one device.",
+      "duplicate_device": "This serial number was already entered."
     }
   }
 }

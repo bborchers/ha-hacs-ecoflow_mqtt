@@ -10,20 +10,33 @@
           "api_host": "EcoFlow-API-Host"
         }
       },
-      "select_devices": {
-        "title": "EcoFlow-Geräte auswählen",
-        "description": "Die mit dem Konto verknüpften Geräte wurden automatisch gefunden.",
-        "data": {"devices": "Geräte"}
-      },
-      "manual_devices": {
-        "title": "EcoFlow-Geräte eingeben",
-        "description": "{reason} Seriennummern durch Kommas getrennt eingeben. Ein Decoder-Typ kann als SERIAL=TYPE ergänzt werden.",
-        "data": {"devices": "Geräte"}
+      "devices": {
+        "title": "EcoFlow-Geräte",
+        "description": "Seriennummer und Decoder-Typ für jedes Gerät eingeben. Weitere Zeilen sind optional.",
+        "data": {
+          "serial_1": "Seriennummer 1",
+          "type_1": "Gerätetyp 1",
+          "serial_2": "Seriennummer 2",
+          "type_2": "Gerätetyp 2",
+          "serial_3": "Seriennummer 3",
+          "type_3": "Gerätetyp 3",
+          "serial_4": "Seriennummer 4",
+          "type_4": "Gerätetyp 4",
+          "serial_5": "Seriennummer 5",
+          "type_5": "Gerätetyp 5",
+          "serial_6": "Seriennummer 6",
+          "type_6": "Gerätetyp 6",
+          "serial_7": "Seriennummer 7",
+          "type_7": "Gerätetyp 7",
+          "serial_8": "Seriennummer 8",
+          "type_8": "Gerätetyp 8"
+        }
       }
     },
     "error": {
       "invalid_auth": "EcoFlow-Anmeldung fehlgeschlagen. E-Mail, Passwort und API-Host prüfen.",
-      "no_devices": "Mindestens ein Gerät auswählen oder eingeben."
+      "no_devices": "Mindestens ein Gerät eingeben.",
+      "duplicate_device": "Diese Seriennummer wurde bereits eingegeben."
     }
   }
 }
