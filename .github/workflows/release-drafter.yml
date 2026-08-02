@@ -13,3 +13,20 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
+  publish-release:
+    name: Publish release draft
+    needs: release-drafter
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish newest release draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          draft_tag="$(gh release list --repo "$GH_REPO" --limit 20 --json tagName,isDraft --jq 'map(select(.isDraft)) | .[0].tagName')"
+          if [ -n "$draft_tag" ] && [ "$draft_tag" != "null" ]; then
+            gh release edit "$draft_tag" --repo "$GH_REPO" --draft=false
+          fi

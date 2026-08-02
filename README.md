@@ -79,7 +79,7 @@ docs(readme): document HACS installation
 ci: validate conventional commits
 ```
 
-Pull Requests werden automatisch mit Commitlint geprüft. Der `main`-Branch ist geschützt; Änderungen werden ausschließlich über Pull Requests übernommen. Nach einem Merge aktualisiert Release Drafter automatisch das nächste Release.
+Pull Requests werden automatisch mit Commitlint geprüft. Der `main`-Branch ist geschützt; Änderungen werden ausschließlich über Pull Requests übernommen. Nach einem Merge aktualisiert Release Drafter das nächste Release und veröffentlicht es automatisch.
 
 ## Lizenz und Herkunft
 

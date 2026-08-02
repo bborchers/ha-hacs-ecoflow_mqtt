@@ -111,6 +111,7 @@ Der Slider `Base load power (partial automatic)` hat aktuell:
 - `.github/workflows/release-drafter.yml` übernimmt den relevanten Release-Drafter-Workflow aus `ha-addons-grafana`; ha-addons-spezifische Deploy-/Dispatch-Schritte sind bewusst nicht enthalten.
 - `.github/release-drafter.yml` löst die nächste Version aus PR-Labels `major`, `minor` und `patch`; Standard ist `patch`.
 - Nach einem Merge nach `main` erzeugt Release Drafter den nächsten Release-Entwurf. Der erste veröffentlichte Release ist `v0.0.1`.
+- Der Workflow veröffentlicht nach dem erfolgreichen Release-Drafter-Schritt den neuesten Release-Entwurf automatisch. Ein Merge nach `main` erzeugt damit ein veröffentlichtes GitHub-Release; ein manueller Draft-Schritt ist nicht erforderlich.
 - Bei künftigen veröffentlichten Releases sollte zusätzlich die `version` in `custom_components/ecoflow_mqtt/manifest.json` mit dem Release-Tag synchronisiert werden.
 - Nach einem Repository-Rename müssen README-Badges, HACS-URL, Issue-Tracker und Remote-URL geprüft werden.
 
