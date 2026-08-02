@@ -44,7 +44,7 @@ class EcoFlowConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
                 self._credentials = credentials
                 try:
-                    self._devices = await client.discover_devices()
+                    self._devices = await client.discover_devices(credentials)
                 except EcoFlowApiError:
                     self._discovery_error = True
                     self._devices = []

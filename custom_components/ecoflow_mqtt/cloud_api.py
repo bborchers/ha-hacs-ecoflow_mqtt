@@ -2,14 +2,23 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
+import json
+import logging
+import threading
 import uuid
 from dataclasses import dataclass
 from typing import Any
 
 import aiohttp
+import paho.mqtt.client as mqtt
 
 from .const import DEFAULT_API_HOST, DEFAULT_BROKER, DEFAULT_PORT
+from .protobuf import decode_pstream, decode_stream
+
+_LOGGER = logging.getLogger(__name__)
+_MQTT_DISCOVERY_TIMEOUT = 15
 
 
 class EcoFlowApiError(Exception):
@@ -30,27 +39,12 @@ class EcoFlowCredentials:
 
 @dataclass(frozen=True)
 class DiscoveredDevice:
-    """A device returned by EcoFlow's private device list endpoint."""
+    """A device discovered from an EcoFlow MQTT property message."""
 
     serial: str
     name: str
     product_name: str
     device_type: str
-
-
-def _device_type(product_name: str, device_name: str) -> str:
-    """Map EcoFlow product labels to the decoder families used by this integration."""
-
-    label = f"{product_name} {device_name}".lower().replace("-", " ")
-    if "stream ultra" in label:
-        return "stream_ultra"
-    if "stream ac pro" in label:
-        return "stream_ac_pro"
-    if "stream ac" in label:
-        return "stream_ac"
-    if "powerstream" in label:
-        return "pstream"
-    return "json"
 
 
 class EcoFlowAccountClient:
@@ -155,38 +149,90 @@ class EcoFlowAccountClient:
             port=port,
         )
 
-    async def discover_devices(self) -> list[DiscoveredDevice]:
-        """Read all devices visible to the authenticated EcoFlow account."""
+    async def discover_devices(
+        self, credentials: EcoFlowCredentials
+    ) -> list[DiscoveredDevice]:
+        """Discover devices through the private MQTT account connection.
 
-        if not self._token or not self._user_id:
-            raise EcoFlowApiError("EcoFlow account is not authenticated")
-        timeout = aiohttp.ClientTimeout(total=25)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            response = await self._request_json(
-                session,
-                "GET",
-                "/device/list",
-                headers={"authorization": f"Bearer {self._token}", "lang": "en_US"},
-                params={"userId": self._user_id},
-            )
-        raw_devices = response.get("data")
-        if isinstance(raw_devices, dict):
-            raw_devices = raw_devices.get("list")
-        if not isinstance(raw_devices, list):
-            raise EcoFlowApiError("EcoFlow device list is incomplete")
+        EcoFlow's private account API does not expose the device list. The app
+        and the tolwi integration therefore configure private devices manually.
+        The MQTT account does, however, receive property messages on the
+        account-wide device topic. Their serial numbers can be discovered from
+        that topic without requiring developer API keys.
+        """
 
-        devices: list[DiscoveredDevice] = []
-        for raw in raw_devices:
-            if not isinstance(raw, dict) or not isinstance(raw.get("sn"), str):
-                continue
-            product_name = str(raw.get("productName") or "EcoFlow device")
-            name = str(raw.get("deviceName") or f"{product_name}-{raw['sn']}")
-            devices.append(
-                DiscoveredDevice(
-                    serial=raw["sn"],
-                    name=name,
-                    product_name=product_name,
-                    device_type=_device_type(product_name, name),
-                )
+        return await asyncio.to_thread(self._discover_mqtt, credentials)
+
+    @staticmethod
+    def _infer_device_type(payload: bytes) -> str:
+        try:
+            json.loads(payload.decode())
+            return "json"
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            pass
+
+        try:
+            stream_values = decode_stream(payload)
+        except (ValueError, IndexError):
+            stream_values = {}
+        if stream_values:
+            if "powGetPv3" in stream_values or "powGetPv4" in stream_values:
+                return "stream_ultra"
+            return "stream_ac_pro"
+
+        try:
+            if decode_pstream(payload):
+                return "pstream"
+        except (ValueError, IndexError):
+            pass
+        return "json"
+
+    def _discover_mqtt(self, credentials: EcoFlowCredentials) -> list[DiscoveredDevice]:
+        found: dict[str, str] = {}
+        finished = threading.Event()
+        prefix = "/app/device/property/"
+        client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id=credentials.client_id
+        )
+        client.username_pw_set(credentials.mqtt_username, credentials.mqtt_password)
+        client.tls_set()
+
+        def on_connect(client, userdata, flags, reason_code, properties=None):
+            if reason_code != 0:
+                _LOGGER.warning("EcoFlow MQTT discovery connection failed: %s", reason_code)
+                finished.set()
+                return
+            client.subscribe(f"{prefix}+")
+
+        def on_message(client, userdata, message):
+            if not message.topic.startswith(prefix):
+                return
+            serial = message.topic[len(prefix) :].split("/", 1)[0]
+            if serial:
+                inferred = self._infer_device_type(message.payload)
+                if serial not in found or inferred != "json":
+                    found[serial] = inferred
+
+        client.on_connect = on_connect
+        client.on_message = on_message
+        try:
+            client.connect(credentials.broker, credentials.port, 60)
+            client.loop_start()
+            finished.wait(_MQTT_DISCOVERY_TIMEOUT)
+        except (OSError, mqtt.MQTTException) as err:
+            raise EcoFlowApiError("EcoFlow MQTT discovery is unavailable") from err
+        finally:
+            client.disconnect()
+            client.loop_stop()
+
+        devices = [
+            DiscoveredDevice(
+                serial=serial,
+                name=serial,
+                product_name=device_type,
+                device_type=device_type,
             )
+            for serial, device_type in sorted(found.items())
+        ]
+        _LOGGER.info("EcoFlow MQTT discovery found %d device(s)", len(devices))
         return devices
