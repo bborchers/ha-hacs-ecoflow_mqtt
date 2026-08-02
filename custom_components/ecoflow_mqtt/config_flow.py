@@ -20,14 +20,29 @@ from .const import (
     DOMAIN,
 )
 
+_DEVICE_ROWS = 8
+_DEVICE_TYPES = (
+    ("json", "JSON-Gerät"),
+    ("pstream", "PowerStream"),
+    ("stream_ultra", "Stream Ultra"),
+    ("stream_ac_pro", "Stream AC Pro"),
+    ("stream_ac", "Stream AC"),
+    ("delta3", "DELTA 3"),
+    ("delta3plus", "DELTA 3 Plus"),
+    ("delta3maxplus", "DELTA 3 Max Plus"),
+    ("deltapro3", "DELTA Pro 3"),
+    ("deltaproultra", "DELTA Pro Ultra"),
+    ("river3", "RIVER 3"),
+    ("river3plus", "RIVER 3 Plus"),
+    ("unknown", "Unbekannt / sonstiges Protobuf-Gerät"),
+)
+
 
 class EcoFlowConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     def __init__(self) -> None:
         self._credentials = None
-        self._devices = []
-        self._discovery_error = False
 
     async def async_step_user(self, user_input=None):
         errors: dict[str, str] = {}
@@ -43,100 +58,58 @@ class EcoFlowConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(credentials.user_id)
                 self._abort_if_unique_id_configured()
                 self._credentials = credentials
-                try:
-                    self._devices = await client.discover_devices(credentials)
-                except EcoFlowApiError:
-                    self._discovery_error = True
-                    self._devices = []
-                if self._devices:
-                    return await self.async_step_select_devices()
-                return await self.async_step_manual_devices()
+                return await self.async_step_devices()
 
         schema = vol.Schema(
             {
                 vol.Required(CONF_ACCOUNT_EMAIL): str,
                 vol.Required(CONF_ACCOUNT_PASSWORD): selector.TextSelector(
-                    selector.TextSelectorConfig(
-                        type=selector.TextSelectorType.PASSWORD
-                    )
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
                 ),
                 vol.Optional(CONF_API_HOST, default=DEFAULT_API_HOST): str,
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
-    async def async_step_select_devices(self, user_input=None):
-        if user_input is not None:
-            selected = set(user_input[CONF_DEVICES])
-            devices = [device for device in self._devices if device.serial in selected]
-            if not devices:
-                return self.async_show_form(
-                    step_id="select_devices",
-                    data_schema=self._device_selector_schema(),
-                    errors={CONF_DEVICES: "no_devices"},
-                )
-            return self._create_entry(devices)
-
-        return self.async_show_form(
-            step_id="select_devices", data_schema=self._device_selector_schema()
-        )
-
-    def _device_selector_schema(self):
-        options = [
-            {
-                "value": device.serial,
-                "label": f"{device.name} ({device.product_name})",
-            }
-            for device in self._devices
-        ]
-        return vol.Schema(
-            {
-                vol.Required(CONF_DEVICES): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=options, multiple=True, mode=selector.SelectSelectorMode.LIST
-                    )
-                )
-            }
-        )
-
-    async def async_step_manual_devices(self, user_input=None):
+    async def async_step_devices(self, user_input=None):
         errors: dict[str, str] = {}
         if user_input is not None:
-            devices = []
-            device_types = {}
-            for item in user_input[CONF_DEVICES].split(","):
-                item = item.strip()
-                if not item:
+            devices: list[str] = []
+            device_types: dict[str, str] = {}
+            for index in range(1, _DEVICE_ROWS + 1):
+                serial = user_input.get(f"serial_{index}", "").strip()
+                if not serial:
                     continue
-                if "=" in item:
-                    serial, device_type = (part.strip() for part in item.split("=", 1))
-                    device_types[serial] = device_type.lower()
-                else:
-                    serial = item
-                if serial:
-                    devices.append(serial)
+                if serial in devices:
+                    errors[f"serial_{index}"] = "duplicate_device"
+                    continue
+                devices.append(serial)
+                device_types[serial] = user_input[f"type_{index}"]
             if not devices:
-                errors[CONF_DEVICES] = "no_devices"
-            else:
-                return self._create_entry(
-                    devices,
-                    device_types=device_types,
-                    discovery_error=self._discovery_error,
-                )
+                errors["serial_1"] = "no_devices"
+            elif not errors:
+                return self._create_entry(devices, device_types)
 
-        description_placeholders = {
-            "reason": "Die automatische Geräteerkennung war nicht verfügbar."
-            if self._discovery_error
-            else "Für dieses Konto wurden keine Geräte zurückgegeben."
-        }
         return self.async_show_form(
-            step_id="manual_devices",
-            data_schema=vol.Schema({vol.Required(CONF_DEVICES): str}),
-            errors=errors,
-            description_placeholders=description_placeholders,
+            step_id="devices", data_schema=self._device_schema(), errors=errors
         )
 
-    def _create_entry(self, devices, *, device_types=None, discovery_error=False):
+    @staticmethod
+    def _device_schema() -> vol.Schema:
+        options = [{"value": value, "label": label} for value, label in _DEVICE_TYPES]
+        type_selector = selector.SelectSelector(
+            selector.SelectSelectorConfig(options=options, mode=selector.SelectSelectorMode.DROPDOWN)
+        )
+        fields = {}
+        for index in range(1, _DEVICE_ROWS + 1):
+            serial_key = f"serial_{index}"
+            type_key = f"type_{index}"
+            serial_validator = vol.Required if index == 1 else vol.Optional
+            fields[serial_validator(serial_key, default="") if index != 1 else serial_validator(serial_key)] = str
+            fields[vol.Optional(type_key, default="json")] = type_selector
+        return vol.Schema(fields)
+
+    def _create_entry(self, devices: list[str], device_types: dict[str, str]):
         credentials = self._credentials
         data = {
             CONF_USER_ID: credentials.user_id,
@@ -145,16 +118,7 @@ class EcoFlowConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_CLIENT_ID: credentials.client_id,
             CONF_BROKER: credentials.broker,
             CONF_PORT: credentials.port,
-            CONF_DEVICES: [device.serial for device in devices]
-            if devices and not isinstance(devices[0], str)
-            else devices,
-            "device_types": device_types
-            or {
-                device.serial: device.device_type
-                for device in devices
-                if not isinstance(device, str)
-            },
+            CONF_DEVICES: devices,
+            "device_types": device_types,
         }
-        if discovery_error:
-            data["device_discovery_fallback"] = True
         return self.async_create_entry(title=f"EcoFlow ({credentials.user_id})", data=data)

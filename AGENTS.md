@@ -36,8 +36,8 @@ Dieses Dokument hält die technischen Erkenntnisse und Entscheidungen für die w
 - Die Plattformen müssen Definitionen immer anhand von `coordinator.device_type(serial)` auswählen. Niemals alle JSON-, PowerStream- und Stream-Entitäten für jedes Gerät erzeugen; das produziert unpassende `unknown`-Entitäten.
 - Der Config-Flow authentifiziert EcoFlow-Konten über `/auth/login` und `/iot-auth/app/certification`. User-ID, MQTT-Benutzer, MQTT-Passwort, Broker, Port und eine neue `ANDROID_<UUID>_<UserID>`-Client-ID werden zur Laufzeit ermittelt; das EcoFlow-Konto-Passwort wird nicht in der Config Entry gespeichert.
 - Die API-Region ist im Config-Flow änderbar und wird standardmäßig auf `api-e.ecoflow.com` gesetzt. Die Zertifikats-URL wird für Paho von `mqtt://`/`mqtts://` bereinigt.
-- Die private Account-API stellt keine nutzbare Geräteliste bereit. Nach der Anmeldung abonniert der Config-Flow deshalb für 15 Sekunden `/app/device/property/+` über MQTT und ermittelt Seriennummern aus eingehenden Nachrichten. JSON-, PowerStream- und Stream-Nachrichten werden automatisch unterschieden; Stream-Telegramme mit PV3/PV4 werden als `stream_ultra`, übrige Stream-Telegramme als `stream_ac_pro` eingeordnet.
-- Die MQTT-Erkennung ist bewusst fehlertolerant: Wenn der Broker Wildcard-Abonnements für den Account nicht zulässt oder innerhalb des Zeitfensters keine Nachricht liefert, bleibt die manuelle `SERIAL=TYPE`-Eingabe als Fallback erhalten. Eine vollständige Geräteliste über `/iot-open/sign/device/list` würde zusätzlich EcoFlow-Developer-Access-/Secret-Keys erfordern und wird daher nicht fälschlich mit E-Mail/Passwort simuliert.
+- Die automatische Geräteerkennung und jede Nutzung der EcoFlow-Public-API wurden verworfen. Die Einrichtung fragt weiterhin nur E-Mail/Passwort für die private MQTT-Zertifikatsermittlung ab.
+- Geräte werden im Config-Flow mit getrennten Seriennummernfeldern und Gerätetyp-Dropdowns eingetragen. Der HA-Config-Flow bietet keine beliebig wachsende Wiederholungsgruppe; deshalb gibt es ein Pflichtfeld plus sieben optionale Gerätezeilen. Leere optionale Zeilen werden nicht gespeichert.
 
 ## Gerätetypen und Entitäten
 
