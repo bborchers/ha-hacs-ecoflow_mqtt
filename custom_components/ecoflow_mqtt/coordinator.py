@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import (CONF_BROKER, CONF_CLIENT_ID, CONF_DEVICES, CONF_MQTT_PASSWORD,
                     CONF_MQTT_USERNAME, CONF_PORT, CONF_USER_ID, DOMAIN, SENSORS)
 from .protobuf import (decode_pstream, decode_stream, encode_pstream_command,
-                       encode_pstream_get, encode_stream_command)
+                       encode_pstream_get, encode_stream_command, encode_stream_get)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -143,7 +143,10 @@ class EcoFlowCoordinator(DataUpdateCoordinator[dict]):
         if self._client:
             uid = self.entry.data[CONF_USER_ID]
             topic = f"/app/{uid}/{serial}/thing/property/get"
-            if self.device_type(serial).startswith(("pstream", "stream_")):
+            if self.device_type(serial).startswith("stream_"):
+                self._client.publish(topic, encode_stream_get(), qos=1)
+                return
+            if self.device_type(serial).startswith("pstream"):
                 self._client.publish(topic, encode_pstream_get(serial), qos=1)
                 return
             payload = {"from": "Android", "lang": "en-us", "id": str(random.randint(100000000, 900000000)), "moduleType": 1, "operateType": "latestQuotas", "version": "1.0", "params": {}, "moduleSn": serial}

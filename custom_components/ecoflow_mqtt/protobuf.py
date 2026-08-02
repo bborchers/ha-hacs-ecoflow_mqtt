@@ -262,6 +262,15 @@ def encode_pstream_get(serial: str) -> bytes:
     return _field(1, 2, header)
 
 
+def encode_stream_get() -> bytes:
+    """Request the Stream device's latest quotas/configuration."""
+    header = b"".join((
+        _field(2, 0, 32), _field(3, 0, 32),
+        _field(14, 0, int(time.time() * 1000)), _field(23, 2, b"ios"),
+    ))
+    return _field(1, 2, header)
+
+
 def encode_stream_command(serial: str, key: str, value, current_values: dict | None = None) -> bytes:
     """Encode the common Stream Ultra/AC Pro DisplayPropertyUpload writes."""
     field_numbers = {
