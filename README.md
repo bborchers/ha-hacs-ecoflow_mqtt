@@ -31,13 +31,15 @@ Die Integration verbindet Home Assistant direkt mit dem inoffiziellen EcoFlow-Cl
 
 ## Konfiguration
 
-Benötigt werden die EcoFlow-MQTT-Zugangsdaten:
+Beim ersten Hinzufügen werden EcoFlow-Konto-E-Mail und -Passwort abgefragt. Die
+Integration ermittelt damit User-ID, MQTT-Zugangsdaten, Broker, Port und Client-ID
+direkt bei EcoFlow. Anschließend werden die Geräte des Kontos automatisch gefunden
+und können ausgewählt werden. Das Konto-Passwort wird nicht in Home Assistant
+gespeichert.
 
-- EcoFlow User-ID
-- MQTT username, password und client ID
-- Geräte-Seriennummern
-
-Protobuf-Geräte werden mit Typ angegeben, zum Beispiel:
+Für Europa ist `api-e.ecoflow.com` voreingestellt. Wenn EcoFlow für ein Konto
+keine private Geräteliste liefert, erscheint ein manueller Fallback. Protobuf-Geräte
+können dort mit Typ angegeben werden, zum Beispiel:
 
 ```text
 HW51...=pstream

@@ -14,7 +14,7 @@ Dieses Dokument hält die technischen Erkenntnisse und Entscheidungen für die w
 
 - Jede künftige technische Entscheidung und relevante Änderung muss in dieser `AGENTS.md` dokumentiert werden. Das gilt insbesondere für Architektur- und Protokollentscheidungen, neue Geräte oder Geräteprofile, Protobuf-Feldzuordnungen, Fehlerursachen und -korrekturen, Entitätsänderungen, Release-/Branch-Regeln sowie besondere Deployment- oder Betriebsmaßnahmen. Die Dokumentation ist im selben Pull Request wie die Änderung zu aktualisieren.
 - Keine direkten Commits auf `main`. Änderungen erfolgen auf einem Feature-/Fix-Branch über Pull Request.
-- `main` ist geschützt und benötigt mindestens ein Review; Force-Push ist deaktiviert.
+- `main` ist geschützt und kann nur über Pull Request geändert werden; ein zusätzliches Review ist nicht erforderlich. Force-Push ist deaktiviert.
 - Commits verwenden Conventional Commits, zum Beispiel `fix(stream): decode nested load power list`.
 - Vor jedem PR mindestens ausführen:
 
@@ -34,6 +34,10 @@ Dieses Dokument hält die technischen Erkenntnisse und Entscheidungen für die w
 - `const.py` enthält Sensor-, Switch- und Number-Definitionen einschließlich Einheit, Bereich und Schrittweite.
 - Entitäten lesen ihren Wert über `coordinator.value(serial, key)` und erhalten Updates über `DataUpdateCoordinator`.
 - Die Plattformen müssen Definitionen immer anhand von `coordinator.device_type(serial)` auswählen. Niemals alle JSON-, PowerStream- und Stream-Entitäten für jedes Gerät erzeugen; das produziert unpassende `unknown`-Entitäten.
+- Der Config-Flow authentifiziert EcoFlow-Konten über `/auth/login` und `/iot-auth/app/certification`. User-ID, MQTT-Benutzer, MQTT-Passwort, Broker, Port und eine neue `ANDROID_<UUID>_<UserID>`-Client-ID werden zur Laufzeit ermittelt; das EcoFlow-Konto-Passwort wird nicht in der Config Entry gespeichert.
+- Die API-Region ist im Config-Flow änderbar und wird standardmäßig auf `api-e.ecoflow.com` gesetzt. Die Zertifikats-URL wird für Paho von `mqtt://`/`mqtts://` bereinigt.
+- Nach der Anmeldung wird `/device/list` mit Bearer-Token abgefragt. Gefundene Geräte können im Config-Flow ausgewählt werden und werden über `productName`/`deviceName` automatisch den Decoderfamilien `stream_ultra`, `stream_ac_pro`, `stream_ac`, `pstream` oder `json` zugeordnet. Wenn die private Geräteauflistung nicht verfügbar ist, bleibt eine manuelle `SERIAL=TYPE`-Eingabe als Fallback erhalten.
+- Die automatische private Geräteauflistung ist bewusst fehlertolerant: EcoFlow-Konten, bei denen `/device/list` nicht erreichbar ist oder keine verwertbare Liste liefert, können mit den bereits ermittelten MQTT-Zugangsdaten über die manuelle Seriennummern-Eingabe eingerichtet werden. Das verhindert, dass eine erfolgreiche Anmeldung wegen einer regional oder kontoseitig nicht verfügbaren Liste verworfen wird.
 
 ## Gerätetypen und Entitäten
 
