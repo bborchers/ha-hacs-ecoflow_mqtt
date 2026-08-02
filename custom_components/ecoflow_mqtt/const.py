@@ -6,8 +6,12 @@ CONF_CLIENT_ID = "client_id"
 CONF_BROKER = "broker"
 CONF_PORT = "port"
 CONF_DEVICES = "devices"
+CONF_ACCOUNT_EMAIL = "account_email"
+CONF_ACCOUNT_PASSWORD = "account_password"
+CONF_API_HOST = "api_host"
 DEFAULT_BROKER = "mqtt-e.ecoflow.com"
 DEFAULT_PORT = 8883
+DEFAULT_API_HOST = "api-e.ecoflow.com"
 
 PLATFORMS = ["sensor", "switch", "number"]
 
