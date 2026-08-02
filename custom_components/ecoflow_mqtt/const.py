@@ -124,5 +124,5 @@ STREAM_NUMBERS = {
     "cmsMinDsgSoc": ("Minimum discharge", "%", 0, 100, 1, "DisplayPropertyUpload"),
     "backupReverseSoc": ("Backup reserve", "%", 0, 100, 1, "DisplayPropertyUpload"),
     "powConsumptionMeasurement": ("Consumption measurement", "W", 0, 10000, 1, "DisplayPropertyUpload"),
-    "loadPower1": ("Base load power (partial automatic)", "W", 0, 800, 10, "ConfigWrite"),
+    "loadPower1": ("Base load power (partial automatic)", "W", 0, 1200, 10, "ConfigWrite"),
 }
