@@ -1,0 +1,30 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "Breaking Changes"
+    labels:
+      - "major"
+  - title: "Features"
+    labels:
+      - "minor"
+  - title: "Bug Fixes"
+    labels:
+      - "patch"
+
+version-resolver:
+  major:
+    labels:
+      - "major"
+  minor:
+    labels:
+      - "minor"
+  patch:
+    labels:
+      - "patch"
+  default: patch
+
+template: |
+  ## Changes
+
+  $CHANGES

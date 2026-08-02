@@ -1,0 +1,15 @@
+name: Release Drafter
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  release-drafter:
+    uses: bborchers/ha-addons-workflow/.github/workflows/release-drafter.yml@main
+    permissions:
+      contents: write
+      pull-requests: write

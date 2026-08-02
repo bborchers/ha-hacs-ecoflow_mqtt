@@ -1,10 +1,10 @@
 # Home Assistant EcoFlow MQTT Integration
 
 ![project stage](https://img.shields.io/badge/project%20stage-experimental-yellow)
-[![license](https://img.shields.io/github/license/bborchers/ha-hacs)](LICENSE)
-[![commit lint](https://github.com/bborchers/ha-hacs/actions/workflows/commitlint.yml/badge.svg)](https://github.com/bborchers/ha-hacs/actions/workflows/commitlint.yml)
+[![license](https://img.shields.io/github/license/bborchers/ha-hacs-ecoflow_mqtt)](LICENSE)
+[![commit lint](https://github.com/bborchers/ha-hacs-ecoflow_mqtt/actions/workflows/commitlint.yml/badge.svg)](https://github.com/bborchers/ha-hacs-ecoflow_mqtt/actions/workflows/commitlint.yml)
 ![maintenance](https://img.shields.io/maintenance/yes/2026)
-[![commit activity](https://img.shields.io/github/commit-activity/t/bborchers/ha-hacs)](https://github.com/bborchers/ha-hacs/commits/main)
+[![commit activity](https://img.shields.io/github/commit-activity/t/bborchers/ha-hacs-ecoflow_mqtt)](https://github.com/bborchers/ha-hacs-ecoflow_mqtt/commits/main)
 
 Diese Integration befindet sich in einer frühen, experimentellen Phase. Es können sich Konfiguration, Entity-Namen und unterstützte Geräte zwischen Versionen ändern.
 
@@ -24,7 +24,7 @@ Die Integration verbindet Home Assistant direkt mit dem inoffiziellen EcoFlow-Cl
 
 1. Home Assistant → **HACS** → **Integrations**
 2. Oben rechts (⋮) → **Custom repositories**
-3. Repository-URL hinzufügen: `https://github.com/bborchers/ha-hacs`
+3. Repository-URL hinzufügen: `https://github.com/bborchers/ha-hacs-ecoflow_mqtt`
 4. Kategorie **Integration** auswählen
 5. `EcoFlow MQTT` installieren und Home Assistant neu starten
 6. **Einstellungen → Geräte & Dienste → Integration hinzufügen → EcoFlow MQTT** öffnen
@@ -77,7 +77,7 @@ docs(readme): document HACS installation
 ci: validate conventional commits
 ```
 
-Pull Requests werden automatisch mit Commitlint geprüft. Erlaubte Typen und die Detailregeln stammen aus `@commitlint/config-conventional`.
+Pull Requests werden automatisch mit Commitlint geprüft. Der `main`-Branch ist geschützt; Änderungen werden ausschließlich über Pull Requests übernommen. Nach einem Merge aktualisiert Release Drafter automatisch das nächste Release.
 
 ## Lizenz und Herkunft
 
