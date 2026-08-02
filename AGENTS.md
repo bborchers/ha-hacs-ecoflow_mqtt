@@ -12,6 +12,7 @@ Dieses Dokument hält die technischen Erkenntnisse und Entscheidungen für die w
 
 ## Arbeitsregeln
 
+- Jede künftige technische Entscheidung und relevante Änderung muss in dieser `AGENTS.md` dokumentiert werden. Das gilt insbesondere für Architektur- und Protokollentscheidungen, neue Geräte oder Geräteprofile, Protobuf-Feldzuordnungen, Fehlerursachen und -korrekturen, Entitätsänderungen, Release-/Branch-Regeln sowie besondere Deployment- oder Betriebsmaßnahmen. Die Dokumentation ist im selben Pull Request wie die Änderung zu aktualisieren.
 - Keine direkten Commits auf `main`. Änderungen erfolgen auf einem Feature-/Fix-Branch über Pull Request.
 - `main` ist geschützt und benötigt mindestens ein Review; Force-Push ist deaktiviert.
 - Commits verwenden Conventional Commits, zum Beispiel `fix(stream): decode nested load power list`.
