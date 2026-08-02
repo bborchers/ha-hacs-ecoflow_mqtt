@@ -2,19 +2,28 @@
   "config": {
     "step": {
       "user": {
-        "title": "EcoFlow MQTT",
-        "description": "Direkte Verbindung zum EcoFlow Cloud-MQTT-Dienst. Zugangsdaten werden von EcoFlow bereitgestellt.",
+        "title": "EcoFlow account",
+        "description": "Sign in with your EcoFlow account. The MQTT user ID, MQTT credentials and client ID are obtained automatically.",
         "data": {
-          "user_id": "EcoFlow User ID",
-          "mqtt_username": "MQTT username",
-          "mqtt_password": "MQTT password",
-          "client_id": "MQTT client ID",
-          "broker": "Broker",
-          "port": "Port",
-          "devices": "Geräte (SERIAL oder SERIAL=TYPE, kommagetrennt)"
+          "account_email": "EcoFlow account email",
+          "account_password": "EcoFlow account password",
+          "api_host": "EcoFlow API host"
         }
+      },
+      "select_devices": {
+        "title": "Select EcoFlow devices",
+        "description": "The devices associated with the account were found automatically.",
+        "data": {"devices": "Devices"}
+      },
+      "manual_devices": {
+        "title": "Enter EcoFlow devices",
+        "description": "{reason} Enter serial numbers separated by commas. A decoder type can be added as SERIAL=TYPE.",
+        "data": {"devices": "Devices"}
       }
     },
-    "error": {"no_devices": "Mindestens eine Seriennummer angeben."}
+    "error": {
+      "invalid_auth": "EcoFlow login failed. Check the email, password and API host.",
+      "no_devices": "Select or enter at least one device."
+    }
   }
 }
