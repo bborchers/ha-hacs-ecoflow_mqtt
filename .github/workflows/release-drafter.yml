@@ -1,32 +1,57 @@
-name: Release Drafter
+name: Release
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   release-drafter:
-    uses: bborchers/ha-addons-workflow/.github/workflows/release-drafter.yml@main
-    permissions:
-      contents: write
-      pull-requests: write
-
-  publish-release:
-    name: Publish release draft
-    needs: release-drafter
+    name: Draft and publish release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Publish newest release draft
+      - uses: actions/checkout@v4
+
+      - name: Draft release
+        id: draft
+        uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync manifest version into release tag
+        id: sync
+        env:
+          DRAFT_TAG: ${{ steps.draft.outputs.tag_name }}
+        run: |
+          version="${DRAFT_TAG#v}"
+          jq --arg version "$version" '.version = $version' \
+            custom_components/ecoflow_mqtt/manifest.json > manifest.json.tmp
+          mv manifest.json.tmp custom_components/ecoflow_mqtt/manifest.json
+
+          if git diff --quiet -- custom_components/ecoflow_mqtt/manifest.json; then
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add custom_components/ecoflow_mqtt/manifest.json
+          git commit -m "ci(release): sync manifest version to $version"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Push release tag
+        env:
+          DRAFT_TAG: ${{ steps.draft.outputs.tag_name }}
+          RELEASE_SHA: ${{ steps.sync.outputs.sha }}
+        run: git push origin "$RELEASE_SHA:refs/tags/$DRAFT_TAG"
+
+      - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          draft_tag="$(gh release list --repo "$GH_REPO" --limit 20 --json tagName,isDraft --jq 'map(select(.isDraft)) | .[0].tagName')"
-          if [ -n "$draft_tag" ] && [ "$draft_tag" != "null" ]; then
-            gh release edit "$draft_tag" --repo "$GH_REPO" --draft=false
-          fi
+          gh release edit "${{ steps.draft.outputs.tag_name }}" \
+            --repo "$GH_REPO" --target "${{ steps.sync.outputs.sha }}" --draft=false
