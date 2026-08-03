@@ -108,7 +108,7 @@ Der Slider `Base load power (partial automatic)` hat aktuell:
 ## Release- und HACS-Regeln
 
 - HACS verwendet die GitHub-Release-/Tag-Version. Ein Commit-Name darf nicht der einzige sichtbare Versionshinweis sein.
-- `.github/workflows/release-drafter.yml` verwendet Release Drafter direkt. Vor der Veröffentlichung wird die aus dem Release-Tag abgeleitete Version in `custom_components/ecoflow_mqtt/manifest.json` geschrieben und zusammen mit einem Release-spezifischen Tag veröffentlicht. Dadurch bleibt `main` geschützt und das HACS-Archiv enthält eine zur Release-Version passende Manifest-Version.
+- `.github/workflows/release-drafter.yml` verwendet Release Drafter direkt. Vor der Veröffentlichung wird die aus dem Release-Tag abgeleitete Version in `custom_components/ecoflow_mqtt/manifest.json` geschrieben und zusammen mit einem Release-spezifischen Tag veröffentlicht. Danach synchronisiert ein automatisch gemergter Manifest-PR dieselbe Version in `main`; dessen Commit wird vom Release-Workflow übersprungen, damit kein zusätzlicher Release-Zyklus entsteht. Dadurch bleiben Release-Tag, HACS-Archiv und `main` synchron.
 - `.github/release-drafter.yml` löst die nächste Version aus PR-Labels `major`, `minor` und `patch`; Standard ist `patch`.
 - Nach einem Merge nach `main` erzeugt Release Drafter den nächsten Release-Entwurf. Der erste veröffentlichte Release ist `v0.0.1`.
 - Der Workflow veröffentlicht nach dem erfolgreichen Release-Drafter-Schritt den neuesten Release-Entwurf automatisch. Ein Merge nach `main` erzeugt damit ein veröffentlichtes GitHub-Release; ein manueller Draft-Schritt ist nicht erforderlich.
