@@ -47,7 +47,7 @@ STREAM...=stream_ultra
 STREAM...=stream_ac_pro
 ```
 
-Mehrere Geräte werden kommasepariert eingetragen. Die Zugangsdaten können über die im [ioBroker-Referenzprojekt](https://github.com/foxthefox/ioBroker.ecoflow-mqtt) beschriebenen Verfahren ermittelt werden.
+Mehrere Geräte werden kommasepariert eingetragen. Die Integration verwendet dafür die dokumentierte EcoFlow-Cloud-Anbindung dieses Repositorys.
 
 ## Sicherheit und Kompatibilität
 
@@ -79,7 +79,7 @@ docs(readme): document HACS installation
 ci: validate conventional commits
 ```
 
-Pull Requests werden automatisch mit Commitlint geprüft. Der `main`-Branch ist geschützt; Änderungen werden ausschließlich über Pull Requests übernommen. Nach einem Merge aktualisiert Release Drafter das nächste Release und veröffentlicht es automatisch.
+Pull Requests werden automatisch mit Commitlint geprüft. Der `main`-Branch ist geschützt; Änderungen werden ausschließlich über Pull Requests übernommen. Nach einem Merge erstellt der Release-Workflow das nächste Release, synchronisiert die Manifest-Version in den Release-Tag und veröffentlicht es automatisch.
 
 ## Lizenz und Herkunft
 

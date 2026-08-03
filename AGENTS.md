@@ -108,11 +108,11 @@ Der Slider `Base load power (partial automatic)` hat aktuell:
 ## Release- und HACS-Regeln
 
 - HACS verwendet die GitHub-Release-/Tag-Version. Ein Commit-Name darf nicht der einzige sichtbare Versionshinweis sein.
-- `.github/workflows/release-drafter.yml` übernimmt den relevanten Release-Drafter-Workflow aus `ha-addons-grafana`; ha-addons-spezifische Deploy-/Dispatch-Schritte sind bewusst nicht enthalten.
+- `.github/workflows/release-drafter.yml` verwendet Release Drafter direkt. Vor der Veröffentlichung wird die aus dem Release-Tag abgeleitete Version in `custom_components/ecoflow_mqtt/manifest.json` geschrieben und zusammen mit einem Release-spezifischen Tag veröffentlicht. Dadurch bleibt `main` geschützt und das HACS-Archiv enthält eine zur Release-Version passende Manifest-Version.
 - `.github/release-drafter.yml` löst die nächste Version aus PR-Labels `major`, `minor` und `patch`; Standard ist `patch`.
 - Nach einem Merge nach `main` erzeugt Release Drafter den nächsten Release-Entwurf. Der erste veröffentlichte Release ist `v0.0.1`.
 - Der Workflow veröffentlicht nach dem erfolgreichen Release-Drafter-Schritt den neuesten Release-Entwurf automatisch. Ein Merge nach `main` erzeugt damit ein veröffentlichtes GitHub-Release; ein manueller Draft-Schritt ist nicht erforderlich.
-- Bei künftigen veröffentlichten Releases sollte zusätzlich die `version` in `custom_components/ecoflow_mqtt/manifest.json` mit dem Release-Tag synchronisiert werden.
+- Das Integrations-Icon liegt als `custom_components/ecoflow_mqtt/icon.png` vor und ist an das aktuelle EcoFlow-App-Icon angelehnt.
 - Nach einem Repository-Rename müssen README-Badges, HACS-URL, Issue-Tracker und Remote-URL geprüft werden.
 
 ## Verifikation und Debugging
