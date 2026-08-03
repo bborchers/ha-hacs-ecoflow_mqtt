@@ -84,7 +84,11 @@ jobs:
           git commit -m "ci(release): sync manifest version to $version"
           git push origin "HEAD:$branch"
 
-          pr_url="$(gh pr create --repo "$GH_REPO" --base main --head "$branch" \
-            --title "ci(release): sync manifest version to $version" \
-            --body "Synchronize custom_components/ecoflow_mqtt/manifest.json with release $DRAFT_TAG.")"
+          pr_url="$(gh pr list --repo "$GH_REPO" --state open --head "$branch" \
+            --json url --jq '.[0].url')"
+          if [ -z "$pr_url" ]; then
+            pr_url="$(gh pr create --repo "$GH_REPO" --base main --head "$branch" \
+              --title "ci(release): sync manifest version to $version" \
+              --body "Synchronize custom_components/ecoflow_mqtt/manifest.json with release $DRAFT_TAG.")"
+          fi
           gh pr merge "$pr_url" --repo "$GH_REPO" --squash --auto --delete-branch
