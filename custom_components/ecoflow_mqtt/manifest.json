@@ -1,7 +1,7 @@
 {
   "domain": "ecoflow_mqtt",
   "name": "EcoFlow MQTT",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "documentation": "https://github.com/bborchers/ha-hacs-ecoflow_mqtt",
   "issue_tracker": "https://github.com/bborchers/ha-hacs-ecoflow_mqtt/issues",
   "codeowners": [
