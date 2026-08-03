@@ -112,7 +112,7 @@ Der Slider `Base load power (partial automatic)` hat aktuell:
 - `.github/release-drafter.yml` löst die nächste Version aus PR-Labels `major`, `minor` und `patch`; Standard ist `patch`.
 - Nach einem Merge nach `main` erzeugt Release Drafter den nächsten Release-Entwurf. Der erste veröffentlichte Release ist `v0.0.1`.
 - Der Workflow veröffentlicht nach dem erfolgreichen Release-Drafter-Schritt den neuesten Release-Entwurf automatisch. Ein Merge nach `main` erzeugt damit ein veröffentlichtes GitHub-Release; ein manueller Draft-Schritt ist nicht erforderlich.
-- Das Integrations-Icon liegt als `custom_components/ecoflow_mqtt/icon.png` vor und ist an das aktuelle EcoFlow-App-Icon angelehnt.
+- Das Integrations-Icon liegt für HACS als `brand/icon.png` und für die lokale Home-Assistant-Brand-Auflösung als `custom_components/ecoflow_mqtt/brand/icon.png` vor. Es ist an das aktuelle EcoFlow-App-Icon angelehnt.
 - Nach einem Repository-Rename müssen README-Badges, HACS-URL, Issue-Tracker und Remote-URL geprüft werden.
 
 ## Verifikation und Debugging
