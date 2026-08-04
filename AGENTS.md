@@ -107,6 +107,8 @@ Der Slider `Base load power (partial automatic)` hat aktuell:
 
 ## Release- und HACS-Regeln
 
+- Renovate ist aktiviert und erstellt Dependency-Update-PRs unmittelbar (`prCreation: "immediate"`); die Konfiguration liegt in `renovate.json`.
+
 - HACS verwendet die GitHub-Release-/Tag-Version. Ein Commit-Name darf nicht der einzige sichtbare Versionshinweis sein.
 - `.github/workflows/release-drafter.yml` verwendet Release Drafter direkt. Vor der Veröffentlichung wird die aus dem Release-Tag abgeleitete Version in `custom_components/ecoflow_mqtt/manifest.json` geschrieben und zusammen mit einem Release-spezifischen Tag veröffentlicht. Danach synchronisiert ein automatisch gemergter Manifest-PR dieselbe Version in `main`; dessen Commit wird vom Release-Workflow übersprungen, damit kein zusätzlicher Release-Zyklus entsteht. Dadurch bleiben Release-Tag, HACS-Archiv und `main` synchron.
 - `.github/release-drafter.yml` löst die nächste Version aus PR-Labels `major`, `minor` und `patch`; Standard ist `patch`.
