@@ -16,7 +16,7 @@ jobs:
       'ci(release): sync manifest version')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Draft release
         id: draft
