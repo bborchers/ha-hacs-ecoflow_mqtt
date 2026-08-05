@@ -6,5 +6,6 @@
   "dependencyDashboardTitle": "Renovate: open updates",
   "dependencyDashboardApproval": false,
   "prCreation": "immediate",
-  "semanticCommits": "enabled"
+  "semanticCommits": "enabled",
+  "assignees": ["bborchers"]
 }
