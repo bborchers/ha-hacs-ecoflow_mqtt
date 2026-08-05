@@ -91,4 +91,15 @@ jobs:
               --title "ci(release): sync manifest version to $version" \
               --body "Synchronize custom_components/ecoflow_mqtt/manifest.json with release $DRAFT_TAG.")"
           fi
-          gh pr merge "$pr_url" --repo "$GH_REPO" --squash --auto --delete-branch
+          if ! gh pr merge "$pr_url" --repo "$GH_REPO" --squash --auto --delete-branch 2>/tmp/merge-error.log; then
+            # "Pull request is in clean status" means there's nothing for
+            # auto-merge to wait on (no required checks on this branch) and
+            # GitHub refuses to arm auto-merge for an already-mergeable PR —
+            # fall back to a direct merge in that case.
+            if grep -q "clean status" /tmp/merge-error.log; then
+              gh pr merge "$pr_url" --repo "$GH_REPO" --squash --delete-branch
+            else
+              cat /tmp/merge-error.log >&2
+              exit 1
+            fi
+          fi
