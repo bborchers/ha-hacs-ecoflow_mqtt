@@ -7,5 +7,6 @@
   "dependencyDashboardApproval": false,
   "prCreation": "immediate",
   "semanticCommits": "enabled",
-  "assignees": ["bborchers"]
+  "assignees": ["bborchers"],
+  "gitAuthor": "Bjoern Borchers <bborchers@users.noreply.github.com>"
 }
