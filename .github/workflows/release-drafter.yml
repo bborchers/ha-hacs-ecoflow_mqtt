@@ -61,7 +61,10 @@ jobs:
 
       - name: Synchronize manifest on main
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The built-in GITHUB_TOKEN attributes squash-merges it performs to
+          # github-actions[bot] regardless of git commit author; a PAT is
+          # required so the merge commit is attributed to bborchers instead.
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }}
           GH_REPO: ${{ github.repository }}
           DRAFT_TAG: ${{ steps.draft.outputs.tag_name }}
         run: |
